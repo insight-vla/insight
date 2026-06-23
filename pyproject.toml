@@ -1,0 +1,191 @@
+# InSight: Self-Guided Skill Acquisition via Steerable VLAs
+#
+# Unified Python project for the openpi VLA codebase, the shared `insight`
+# VLM-reasoning library, and the sim + xArm-real flywheels. The lightweight
+# remote-inference client lives at packages/openpi-client/ and is brought in
+# as a workspace member.
+#
+# Sub-environments to be aware of:
+#   * The original LIBERO benchmark historically required Python 3.8; we use
+#     the libero-insight fork which works under 3.11.
+#
+# Install:
+#   uv sync                # core (JAX, flax, lerobot, openpi-client, openai, google-auth, etc.)
+#   uv sync --group rlds   # (optional) RLDS / DROID dataset support
+#   uv sync --group dev    # (optional) test + lint + notebook tooling
+#
+# NB: av==14.2.0 is intentionally pinned (PyAV 14.3/14.4 are sdist-only and
+# Ubuntu 22.04 ships an older ffmpeg).
+
+[project]
+name = "insight-vla"
+version = "0.1.0"
+description = "InSight: Self-Guided Skill Acquisition via Steerable Vision-Language-Action Models."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Maggie Wang" },
+    { name = "Lars Osterberg" },
+    { name = "Stephen Tian" },
+    { name = "Ola Shorinwa" },
+    { name = "Jiajun Wu" },
+    { name = "Mac Schwager" },
+]
+
+dependencies = [
+    # ---- pi_0.5 / openpi VLA core (JAX) ----
+    "augmax>=0.3.4",
+    "chex>=0.1.86",
+    "dm-tree>=0.1.8",
+    "einops>=0.8.0",
+    "equinox>=0.11.8",
+    "flatbuffers>=24.3.25",
+    "flax==0.10.2",
+    "fsspec[gcs]>=2024.6.0",
+    "imageio>=2.36.1",
+    "jax[cuda12]==0.5.3",
+    "jaxtyping==0.2.36",
+    "ml_collections==1.0.0",
+    "numpy>=1.22.4,<2.0.0",
+    "numpydantic>=1.6.6",
+    "opencv-python>=4.10.0.84",
+    "orbax-checkpoint==0.11.13",
+    "pillow>=11.0.0",
+    "sentencepiece>=0.2.0",
+    "torch==2.7.1",
+    "tqdm-loggable>=0.2",
+    "typing-extensions>=4.12.2",
+    "tyro>=0.9.5",
+    "wandb>=0.19.1",
+    "filelock>=3.16.1",
+    "beartype==0.19.0",
+    "treescope>=0.1.7",
+    "transformers==4.53.2",
+    "rich>=14.0.0",
+    "polars>=1.30.0",
+    "python-dotenv>=1.0.0",
+
+    # ---- VLM clients used by src/insight/ ----
+    # (Imported at module load in vlm_client.py, so they must be in core deps,
+    # not an optional group.)
+    "openai>=2.32.0",
+    "google-auth>=2.40.2",
+
+    # ---- LeRobot dataset format ----
+    "lerobot",
+
+    # ---- openpi remote-inference client (this repo, packages/openpi-client) ----
+    "openpi-client",
+
+    # ---- Sim (LIBERO / robosuite) — main env supports the libero-insight fork ----
+    "gym-aloha>=0.1.1",
+    "robosuite>=1.4.1",
+    "mujoco>=3.0.0",
+
+    # ---- xArm hardware stack (safe to install on machines without hardware) ----
+    "pyrealsense2>=2.57.7.10387",
+    "xarm-python-sdk>=1.17.3",
+]
+
+[project.urls]
+Repository = "https://github.com/insight-vla/insight"
+
+# ----------------------------------------------------------------------------
+# Optional dependency groups
+# ----------------------------------------------------------------------------
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "ruff>=0.8.6",
+    "pre-commit>=4.0.1",
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.5",
+    "matplotlib>=3.10.0",
+    "pynvml>=12.0.0",
+]
+rlds = [
+    # NOTE: tensorflow-cpu 2.15.0 only ships cp311 wheels.
+    "dlimp",
+    "tensorflow-cpu==2.15.0",
+    "tensorflow-datasets==4.9.9",
+]
+
+# ----------------------------------------------------------------------------
+# uv overrides and sources
+# ----------------------------------------------------------------------------
+
+[tool.uv]
+# av: PyAV 14.3/14.4 are sdist-only and Ubuntu 22.04 ships ffmpeg 4.4 — pin to
+#   the last release with binary wheels for our ffmpeg.
+# ml-dtypes / tensorstore: pinned to versions compatible with our JAX 0.5.3.
+override-dependencies = [
+    "ml-dtypes==0.4.1",
+    "tensorstore==0.1.74",
+    "av==14.2.0",
+]
+
+[tool.uv.sources]
+openpi-client = { workspace = true }
+lerobot = { git = "https://github.com/huggingface/lerobot", rev = "0cf864870cf29f4738d3ade893e6fd13fbd7cdb5" }
+dlimp = { git = "https://github.com/kvablack/dlimp", rev = "ad72ce3a9b414db2185bc0b38461d4101a65477a" }
+[tool.uv.workspace]
+members = ["packages/*"]
+
+# ----------------------------------------------------------------------------
+# Packaging
+# ----------------------------------------------------------------------------
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+# Ship both top-level packages from src/ plus the top-level real/sim/training packages.
+packages = ["src/openpi", "src/insight", "real", "sim", "training"]
+
+# ----------------------------------------------------------------------------
+# Lint / format
+# ----------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = [
+    "docker",
+    "third_party",
+    "src/openpi/models_pytorch/transformers_replace/*",
+]
+
+[tool.ruff.lint]
+select = [
+    "B", "C4", "DTZ", "E4", "E7", "E9", "F", "FBT", "FURB", "I", "ICN",
+    "ISC", "LOG", "N", "PD", "PERF", "PIE", "PLC", "PLE",
+    "PLR1", "PLR5", "PLW", "PT", "Q", "RET", "RUF", "SIM", "SLF",
+    "T10", "T20", "UP", "W",
+]
+ignore = [
+    "F722",   # Conflicts with jaxtyping array annotations.
+    "T201",   # We use print statements.
+    "PD008",  # Lots of false positives.
+    "ISC001", # Disabled for ruff format compatibility.
+    "LOG015", # Use logger.info.
+]
+unfixable = [
+    "B905",   # Fix defaults to strict=False, which we don't want.
+]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+force-sort-within-sections = true
+single-line-exclusions = ["collections.abc", "typing", "typing_extensions"]
+known-third-party = ["wandb"]
+
+# ----------------------------------------------------------------------------
+# Pytest
+# ----------------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+markers = ["manual: should be run manually."]
+testpaths = ["src", "training", "sim", "real", "packages"]

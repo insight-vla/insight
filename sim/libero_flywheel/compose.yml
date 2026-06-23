@@ -1,0 +1,58 @@
+# Run with:
+# docker compose -f sim/libero_flywheel/compose.yml up --build
+services:
+  runtime:
+    image: libero
+    depends_on:
+      - openpi_server
+    build:
+      context: ../..
+      dockerfile: sim/libero_flywheel/Dockerfile
+      network: host
+    init: true
+    tty: true
+    network_mode: host
+    privileged: true
+    volumes:
+      - $PWD:/app
+      - ../../data:/data
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+    environment:
+      - CLIENT_ARGS
+      - DISPLAY=$DISPLAY
+      - MUJOCO_GL=${MUJOCO_GL:-egl}
+      - OPENAI_API_KEY
+      - GEMINI_API_KEY
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  openpi_server:
+    image: openpi_server
+    build:
+      context: ../..
+      dockerfile: training/docker/serve_policy.Dockerfile
+      network: host
+    init: true
+    tty: true
+    network_mode: host
+    volumes:
+      - $PWD:/app
+      - ${OPENPI_DATA_HOME:-~/.cache/openpi}:/openpi_assets
+    environment:
+      - SERVER_ARGS
+      - OPENPI_DATA_HOME=/openpi_assets
+      - IS_DOCKER=true
+
+    # Comment out this block if not running on a machine with GPUs.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

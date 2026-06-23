@@ -1,0 +1,106 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+pip-wheel-metadata/
+.installed.cfg
+
+# ---- Virtual envs / uv ----
+.venv/
+.venv_*/
+venv/
+env/
+ENV/
+.uv_cache/
+.python-version-local
+
+# ---- Tooling caches ----
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.pyre/
+.pytype/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+
+# ---- Editors / OS ----
+.vscode/
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*.swn
+.DS_Store
+Thumbs.db
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ---- ML / training artifacts ----
+checkpoints/
+data/
+assets/
+runs/
+wandb/
+logs/
+slurm_logs/
+outputs/
+diagnose_videos/
+demo_orientation_examples/
+video_font_test*
+wrist_axes_overlay_demo.png
+
+# Norm-stats files live under assets/<config_name>/.../norm_stats.json &mdash;
+# the parent assets/ rule above covers them.
+
+# ---- Large binary artifacts ----
+*.ckpt
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.npz
+*.npy
+*.pkl
+*.pickle
+*.parquet
+*.hdf5
+*.h5
+*.bag
+
+# ---- Media (rollout/video artifacts) ----
+*.mp4
+*.webm
+*.mov
+*.avi
+
+# ---- Secrets / API keys ----
+.env
+.env.*
+!.env.example
+.gcloud
+credentials.json
+*.pem
+*.key
+secrets/
+.api_keys
+
+# ---- Logs ----
+*.log
+
+# ---- Third-party submodules (vendored separately, do not commit) ----
+third_party/
+
+# ---- One-off scrubbed scripts kept out of the release ----
+scripts/ship_xarm_*.sh

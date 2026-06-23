@@ -1,0 +1,53 @@
+InSight: Self-Guided Skill Acquisition via Steerable VLAs
+
+Copyright (c) 2026 The InSight Authors
+
+This product includes software developed as part of the InSight project,
+released under the Apache License, Version 2.0 (see LICENSE).
+
+================================================================================
+Third-party components
+================================================================================
+
+This codebase incorporates and/or builds on the following third-party software.
+Each component retains its original license; see the individual project's
+license file for the full terms.
+
+* Physical Intelligence openpi (https://github.com/Physical-Intelligence/openpi)
+  Apache License 2.0
+  Used as the underlying pi_0.5 VLA codebase. The src/openpi/ tree is derived
+  from openpi with modifications for InSight (additional training configs,
+  policies, and training loops; see commit history).
+
+* LIBERO (https://github.com/Lifelong-Robot-Learning/LIBERO)
+  MIT License
+  Used as the simulation benchmark for the block-flip and drawer-close
+  experiments. We rely on the libero-insight fork
+  (https://github.com/insight-vla/libero-insight), which adds drawer-primitive
+  BDDLs on top of upstream LIBERO.
+
+* LeRobot (https://github.com/huggingface/lerobot)
+  Apache License 2.0
+  Dataset format and loaders used by both simulation and real-robot training
+  pipelines.
+
+* Gemma (https://ai.google.dev/gemma)
+  Gemma Terms of Use + Gemma Prohibited Use Policy
+  Backbone weights used by pi_0.5. Gemma weights are NOT distributed with this
+  repository and are subject to Google's Gemma Terms.
+
+* Gemini 3 Flash API (https://ai.google.dev/)
+  Subject to Google's API terms of service
+  Used as the planner / skill-gap proposer / oracle VLM at runtime; not
+  distributed with this repository.
+
+================================================================================
+External baseline (not vendored)
+================================================================================
+
+* CaP-X (https://capgym.github.io/, https://arxiv.org/abs/2603.22435)
+  Fu et al. CaP-X is used as a Code-as-Policy baseline in the paper's
+  twist / pour / composition experiments. The CaP-X codebase itself is NOT
+  vendored in this repository; install it separately from its upstream
+  source. The InSight-side evaluation harness used to run the comparison
+  is described in the paper appendix.
